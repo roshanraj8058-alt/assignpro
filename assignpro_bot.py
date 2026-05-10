@@ -79,12 +79,26 @@ SAMPLES = {
     "nursing_care":       {"name": "Nursing — Care Plan Assignment (2:1 Grade)",                    "file_id": "BQACAgUAAxkBAAMhaf92Fc9BLA-BoZ1RUYd0Ya7C0KUAAjAfAALm3fhXM1V8Wcu2daw7BA"},
     "nursing_reflection": {"name": "Nursing — Clinical Reflection (First Class)",                   "file_id": "BQACAgUAAxkBAAMyaf924zLSUoQHXDYWY2OcFyEQBwsAAj8fAALm3fhXGqlWEZ9eGx07BA"},
     "nursing_care_plan":  {"name": "Nursing — Post-Operative Care Plan Essay (First Class)",        "file_id": "BQACAgUAAxkBAANTaf9_okd2pmDjp_HtBiaaZ_D7kocAAk8fAALm3fhX05-E9az5t047BA"},
+    "nursing_mental_health":  {"name": "Nursing — Mental Health Assessment & Care Planning (First Class)", "file_id": "BQACAgUAAxkBAAOZagABNZZpBdhjFjLJWFPgVhuhl82eAALdGgACdgkAAVT6UyP_-0FZPjsE"},
+    "nursing_safeguarding":   {"name": "Nursing — Safeguarding Children (2:1 Grade)",                      "file_id": "PLACEHOLDER_safeguarding"},
+    "nursing_medicines":      {"name": "Nursing — Medicines Management & Safe Administration (First Class)","file_id": "BQACAgUAAxkBAAOSagABNURX6w-MLireM6moVUKNfLHMAALaGgACdgkAAVT9fB5ko8DbeTsE"},
+    "nursing_eol":            {"name": "Nursing — End of Life Care (2:1 Grade)",                           "file_id": "BQACAgUAAxkBAAOJagABNQTpI006pvn8ic17Pu8jQ_f7AALXGgACdgkAAVQOH-xBv5ColzsE"},
+    "nursing_dementia":       {"name": "Nursing — Person-Centred Dementia Care (2:1 Grade)",               "file_id": "BQACAgUAAxkBAAOGagABNPQsIKPJsT9FhqoDn3W3C7GdAALWGgACdgkAAVRp3fyIVliveDsE"},
+    "nursing_infection":      {"name": "Nursing — Infection Prevention & Control (First Class)",           "file_id": "BQACAgUAAxkBAAOPagABNTOcoTS3upXsfII4vS0WPy2dAALZGgACdgkAAVTpJU_qFl8AAew7BA"},
+    "nursing_midwifery":      {"name": "Nursing — Woman-Centred Midwifery Practice (First Class)",         "file_id": "BQACAgUAAxkBAAOWagABNV0_JGIAAYzOfQtNBWqfI_XfFAAC3BoAAnYJAAFUaILfLhHVNYg7BA"},
+    "nursing_diabetes":       {"name": "Nursing — Type 2 Diabetes Management (2:1 Grade)",                "file_id": "BQACAgUAAxkBAAOcagABNbTkSXH-kVtnxYVJbozhUSroAALeGgACdgkAAVRgUdrl_dOX5TsE"},
     # ── COMPUTER SCIENCE ──
     "cs_python":          {"name": "Computer Science — Python Programming Report",                  "file_id": "YOUR_FILE_ID_14"},
     "cs_ai":              {"name": "Computer Science — AI/ML Research Paper (2:1 Grade)",           "file_id": "YOUR_FILE_ID_15"},
     # ── LAW ──
     "law_essay":          {"name": "Law — Criminal Law Essay (First Class, OSCOLA)",                "file_id": "BQACAgUAAxkBAANQaf9_hhu5j2wo7zNnZV2r3QJbBfwAAk4fAALm3fhX2FvDbP22SyY7BA"},
     "law_tort":           {"name": "Law — Tort Law & Negligence Essay (2:1 Grade, OSCOLA)",        "file_id": "BQACAgUAAxkBAANNaf9_Z35aAoG6QriO8GV7O4CPz5MAAk0fAALm3fhXmej01tDfvao7BA"},
+    "law_contract":    {"name": "Law — Contract Law: Offer, Acceptance & Consideration (First Class)", "file_id": "PLACEHOLDER_law_contract"},
+    "law_employment":  {"name": "Law — Employment Law: Unfair Dismissal (2:1 Grade)",                  "file_id": "PLACEHOLDER_law_employment"},
+    "law_human_rights":{"name": "Law — Human Rights Act 1998 (First Class)",                           "file_id": "PLACEHOLDER_law_human_rights"},
+    "law_company":     {"name": "Law — Company Law: Directors Duties (2:1 Grade)",                     "file_id": "PLACEHOLDER_law_company"},
+    "law_land":        {"name": "Law — Land Law: Adverse Possession (First Class)",                    "file_id": "PLACEHOLDER_law_land"},
+    "law_family":      {"name": "Law — Family Law: Best Interests of the Child (2:1 Grade)",           "file_id": "PLACEHOLDER_law_family"},
 }
 
 GUIDES = {
@@ -177,10 +191,18 @@ def literature_samples_keyboard():
 
 def nursing_samples_keyboard():
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("💊 Care Plan",              callback_data="sample_nursing_care")],
-        [InlineKeyboardButton("💊 Clinical Reflection",    callback_data="sample_nursing_reflection")],
-        [InlineKeyboardButton("💊 Post-Operative Care Plan",callback_data="sample_nursing_care_plan")],
-        [InlineKeyboardButton("« Back to Samples",         callback_data="samples")],
+        [InlineKeyboardButton("💊 Care Plan",                   callback_data="sample_nursing_care")],
+        [InlineKeyboardButton("💊 Clinical Reflection",         callback_data="sample_nursing_reflection")],
+        [InlineKeyboardButton("💊 Post-Operative Care Plan",    callback_data="sample_nursing_care_plan")],
+        [InlineKeyboardButton("💊 Mental Health Assessment",    callback_data="sample_nursing_mental_health")],
+        [InlineKeyboardButton("💊 Safeguarding Children",       callback_data="sample_nursing_safeguarding")],
+        [InlineKeyboardButton("💊 Medicines Management",        callback_data="sample_nursing_medicines")],
+        [InlineKeyboardButton("💊 End of Life Care",            callback_data="sample_nursing_eol")],
+        [InlineKeyboardButton("💊 Dementia Care",               callback_data="sample_nursing_dementia")],
+        [InlineKeyboardButton("💊 Infection Control",           callback_data="sample_nursing_infection")],
+        [InlineKeyboardButton("💊 Midwifery Practice",          callback_data="sample_nursing_midwifery")],
+        [InlineKeyboardButton("💊 Diabetes Management",         callback_data="sample_nursing_diabetes")],
+        [InlineKeyboardButton("« Back to Samples",              callback_data="samples")],
     ])
 
 def cs_samples_keyboard():
@@ -192,9 +214,15 @@ def cs_samples_keyboard():
 
 def law_samples_keyboard():
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("⚖️ Criminal Law Essay", callback_data="sample_law_essay")],
-        [InlineKeyboardButton("⚖️ Tort Law Essay",     callback_data="sample_law_tort")],
-        [InlineKeyboardButton("« Back to Samples",     callback_data="samples")],
+        [InlineKeyboardButton("⚖️ Criminal Law Essay",      callback_data="sample_law_essay")],
+        [InlineKeyboardButton("⚖️ Tort Law Essay",          callback_data="sample_law_tort")],
+        [InlineKeyboardButton("⚖️ Contract Law",            callback_data="sample_law_contract")],
+        [InlineKeyboardButton("⚖️ Employment Law",          callback_data="sample_law_employment")],
+        [InlineKeyboardButton("⚖️ Human Rights Law",        callback_data="sample_law_human_rights")],
+        [InlineKeyboardButton("⚖️ Company Law",             callback_data="sample_law_company")],
+        [InlineKeyboardButton("⚖️ Land Law",                callback_data="sample_law_land")],
+        [InlineKeyboardButton("⚖️ Family Law",              callback_data="sample_law_family")],
+        [InlineKeyboardButton("« Back to Samples",          callback_data="samples")],
     ])
 
 def guides_keyboard():
@@ -434,6 +462,22 @@ async def button_handler(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await send_sample(query, "nursing_reflection")
     elif data == "sample_nursing_care_plan":
         await send_sample(query, "nursing_care_plan")
+    elif data == "sample_nursing_mental_health":
+        await send_sample(query, "nursing_mental_health")
+    elif data == "sample_nursing_safeguarding":
+        await send_sample(query, "nursing_safeguarding")
+    elif data == "sample_nursing_medicines":
+        await send_sample(query, "nursing_medicines")
+    elif data == "sample_nursing_eol":
+        await send_sample(query, "nursing_eol")
+    elif data == "sample_nursing_dementia":
+        await send_sample(query, "nursing_dementia")
+    elif data == "sample_nursing_infection":
+        await send_sample(query, "nursing_infection")
+    elif data == "sample_nursing_midwifery":
+        await send_sample(query, "nursing_midwifery")
+    elif data == "sample_nursing_diabetes":
+        await send_sample(query, "nursing_diabetes")
     elif data == "sample_cs_python":
         await send_sample(query, "cs_python")
     elif data == "sample_cs_ai":
@@ -442,6 +486,18 @@ async def button_handler(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await send_sample(query, "law_essay")
     elif data == "sample_law_tort":
         await send_sample(query, "law_tort")
+    elif data == "sample_law_contract":
+        await send_sample(query, "law_contract")
+    elif data == "sample_law_employment":
+        await send_sample(query, "law_employment")
+    elif data == "sample_law_human_rights":
+        await send_sample(query, "law_human_rights")
+    elif data == "sample_law_company":
+        await send_sample(query, "law_company")
+    elif data == "sample_law_land":
+        await send_sample(query, "law_land")
+    elif data == "sample_law_family":
+        await send_sample(query, "law_family")
 
     # ── GUIDES ──
     elif data == "guides":
