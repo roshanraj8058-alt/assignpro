@@ -14,6 +14,10 @@ from telegram.ext import (
     MessageHandler, filters, ContextTypes, ConversationHandler
 )
 
+import json
+import datetime
+from pathlib import Path
+
 logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -26,6 +30,89 @@ WEBSITE_UK   = "https://uk.assignprosolution.com"
 WEBSITE_AU   = "https://au.assignprosolution.com"
 WEBSITE_UAE  = "https://ae.assignprosolution.com"
 WEBSITE_CA   = "https://ca.assignprosolution.com"
+
+
+# ─── PHASE 2 CONFIG ────────────────────────────────────────────────────────────
+GUIDE_PRICE_GBP  = "£4.99"
+GUIDE_PRICE_AUD  = "AU$9.99"
+DATA_FILE        = "user_data.json"   # stores user activity
+
+# Guide unlock codes (admin sets these via WhatsApp)
+# Format: {"USER_ID": ["harvard", "apa"]}  — keys are guide names
+UNLOCKED_GUIDES  = {}
+
+def load_data():
+    """Load user data from JSON file."""
+    try:
+        if Path(DATA_FILE).exists():
+            return json.loads(Path(DATA_FILE).read_text())
+    except Exception:
+        pass
+    return {"users": {}, "downloads": {}, "unlocked_guides": {}}
+
+def save_data(data):
+    """Save user data to JSON file."""
+    try:
+        Path(DATA_FILE).write_text(json.dumps(data, indent=2))
+    except Exception as e:
+        logger.error(f"Could not save data: {e}")
+
+def log_user(user):
+    """Log user details when they interact with the bot."""
+    data = load_data()
+    uid  = str(user.id)
+    if uid not in data["users"]:
+        data["users"][uid] = {
+            "id":         user.id,
+            "username":   user.username or "",
+            "first_name": user.first_name or "",
+            "last_name":  user.last_name or "",
+            "joined":     datetime.datetime.now().isoformat(),
+            "last_seen":  datetime.datetime.now().isoformat(),
+            "downloads":  [],
+            "guides":     [],
+        }
+    else:
+        data["users"][uid]["last_seen"] = datetime.datetime.now().isoformat()
+    save_data(data)
+    return data
+
+def has_downloaded_sample(user_id, sample_key):
+    """Check if user already downloaded this sample."""
+    data = load_data()
+    uid  = str(user_id)
+    return sample_key in data["users"].get(uid, {}).get("downloads", [])
+
+def record_download(user_id, sample_key):
+    """Record a sample download for this user."""
+    data = load_data()
+    uid  = str(user_id)
+    if uid not in data["users"]:
+        data["users"][uid] = {"downloads": [], "guides": []}
+    if sample_key not in data["users"][uid].get("downloads", []):
+        data["users"][uid].setdefault("downloads", []).append(sample_key)
+    save_data(data)
+
+def has_guide_access(user_id, guide_key):
+    """Check if user has paid/been granted access to a guide."""
+    data = load_data()
+    uid  = str(user_id)
+    return guide_key in data["users"].get(uid, {}).get("guides", [])
+
+def grant_guide_access(user_id, guide_key):
+    """Admin grants guide access to a user."""
+    data = load_data()
+    uid  = str(user_id)
+    if uid not in data["users"]:
+        data["users"][uid] = {"downloads": [], "guides": []}
+    data["users"][uid].setdefault("guides", []).append(guide_key)
+    save_data(data)
+    return True
+
+def get_all_users():
+    """Get all user records for admin."""
+    data = load_data()
+    return data["users"]
 
 # ─── STUDY PURPOSE WARNING ─────────────────────────────────────────────────────
 STUDY_WARNING = (
@@ -294,8 +381,34 @@ def quote_cta_keyboard():
 
 # ─── HELPERS ───────────────────────────────────────────────────────────────────
 async def send_sample(query, sample_key):
-    sample = SAMPLES.get(sample_key)
-    if sample and not sample["file_id"].startswith(("YOUR_FILE_ID", "PLACEHOLDER")):
+    user    = query.from_user
+    sample  = SAMPLES.get(sample_key)
+    if not sample:
+        return
+
+    # ── Log the user ──
+    log_user(user)
+
+    # ── Check if already downloaded ──
+    if has_downloaded_sample(user.id, sample_key):
+        await query.message.reply_text(
+            f"⚠️ *You've already downloaded this sample!*\n\n"
+            f"📄 *{sample['name']}*\n\n"
+            "Each sample can only be downloaded once per user. "
+            "This keeps our library fair and exclusive for everyone.\n\n"
+            "💡 *Want more samples or your own custom work?*\n"
+            "Get a free quote and we'll create something tailored just for you!",
+            parse_mode="Markdown",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("📋 Get a Free Quote", callback_data="quote")],
+                [InlineKeyboardButton("📱 WhatsApp Us",      url=WHATSAPP_URL)],
+                [InlineKeyboardButton("« Back to Samples",   callback_data="samples")],
+            ])
+        )
+        return
+
+    # ── Send the sample ──
+    if not sample["file_id"].startswith(("YOUR_FILE_ID", "PLACEHOLDER")):
         await query.message.reply_document(
             document=sample["file_id"],
             caption=(
@@ -307,6 +420,20 @@ async def send_sample(query, sample_key):
             parse_mode="Markdown",
             reply_markup=quote_cta_keyboard()
         )
+        # ── Record the download ──
+        record_download(user.id, sample_key)
+        # ── Notify admin ──
+        try:
+            await query.get_bot().send_message(
+                chat_id=ADMIN_ID,
+                text=f"📥 *Sample Downloaded*\n"
+                     f"User: {user.first_name} {user.last_name or ''} (@{user.username or 'no username'})\n"
+                     f"ID: `{user.id}`\n"
+                     f"Sample: {sample['name']}",
+                parse_mode="Markdown"
+            )
+        except Exception:
+            pass
     else:
         await query.message.reply_text(
             f"📄 *{sample['name']}*\n\n"
@@ -320,10 +447,77 @@ async def send_sample(query, sample_key):
             ])
         )
 
+async def send_guide(query, guide_key):
+    """Send a guide — locked behind payment unless user has access."""
+    user  = query.from_user
+    guide = GUIDES.get(guide_key)
+    if not guide:
+        return
+
+    log_user(user)
+
+    # ── Check if user has paid/been granted access ──
+    if not has_guide_access(user.id, guide_key):
+        await query.message.reply_text(
+            f"🔒 *{guide['name']}*\n\n"
+            f"This premium guide is available for *{GUIDE_PRICE_GBP}* (UK) or *{GUIDE_PRICE_AUD}* (Australia).\n\n"
+            "✅ *What you get:*\n"
+            "• Instant PDF download\n"
+            "• Complete referencing examples\n"
+            "• Expert tips from our writers\n"
+            "• Lifetime access\n\n"
+            "💳 *To unlock:* Message us on WhatsApp with the guide name and we'll send you the payment link. "
+            "Once paid, you'll get instant access right here in the bot!\n\n"
+            "🎁 *Bundle deal:* Get ALL 8 guides for just £14.99!",
+            parse_mode="Markdown",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("💳 Unlock This Guide — WhatsApp",
+                    url=f"https://wa.me/{WHATSAPP_NUM}?text=Hi!+I+want+to+unlock+the+{guide['name'].replace(' ','+')}+for+{GUIDE_PRICE_GBP}")],
+                [InlineKeyboardButton("🎁 Get ALL 8 Guides — £14.99",
+                    url=f"https://wa.me/{WHATSAPP_NUM}?text=Hi!+I+want+to+buy+all+8+guides+bundle")],
+                [InlineKeyboardButton("« Back to Guides", callback_data="guides")],
+            ])
+        )
+        # Notify admin of interest
+        try:
+            await query.get_bot().send_message(
+                chat_id=ADMIN_ID,
+                text=f"💰 *Guide Interest*\n"
+                     f"User: {user.first_name} (@{user.username or 'no username'})\n"
+                     f"ID: `{user.id}`\n"
+                     f"Guide: {guide['name']}\n"
+                     f"➡️ Follow up on WhatsApp!",
+                parse_mode="Markdown"
+            )
+        except Exception:
+            pass
+        return
+
+    # ── User has access — send the guide ──
+    if not guide["file_id"].startswith(("YOUR_FILE_ID", "PLACEHOLDER")):
+        await query.message.reply_document(
+            document=guide["file_id"],
+            caption=f"📚 *{guide['name']}*\n\nThank you for your purchase! Enjoy your guide. 🎉\n\nNeed help with your assignment? Get a free quote below!",
+            parse_mode="Markdown",
+            reply_markup=quote_cta_keyboard()
+        )
+    else:
+        await query.message.reply_text(
+            f"✅ *Access granted for: {guide['name']}*\n\n"
+            "This guide is being prepared. We'll send it to you directly on WhatsApp within the hour!",
+            parse_mode="Markdown",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("📱 WhatsApp Us", url=WHATSAPP_URL)],
+            ])
+        )
+
 # ─── WELCOME ───────────────────────────────────────────────────────────────────
 async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     name = user.first_name or "there"
+
+    # Log user data
+    log_user(user)
 
     welcome = (
         f"👋 *Welcome to AssignPro Solution, {name}!*\n\n"
@@ -534,39 +728,21 @@ async def button_handler(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     # ── GUIDES ──
     elif data == "guides":
         await query.edit_message_text(
-            "📚 *Free Guides*\n\n"
-            "Download these completely free — our gift to every student!\n\n"
-            f"{STUDY_WARNING}",
+            "📚 *Premium Study Guides*\n\n"
+            f"🔒 Our expert guides are available for just *{GUIDE_PRICE_GBP}* each (or *£14.99* for all 8!)\n\n"
+            "Each guide includes:\n"
+            "✅ Complete referencing examples\n"
+            "✅ Expert tips from our writers\n"
+            "✅ Tailored for UK & Australia universities\n"
+            "✅ Instant download after payment\n\n"
+            "💳 *To unlock:* Click any guide below, then message us on WhatsApp to pay and get instant access!",
             parse_mode="Markdown",
             reply_markup=guides_keyboard()
         )
 
     elif data.startswith("guide_"):
         key = data.replace("guide_", "")
-        guide = GUIDES.get(key)
-        if guide:
-            if "YOUR_FILE_ID" not in guide["file_id"]:
-                await query.message.reply_document(
-                    document=guide["file_id"],
-                    caption=(
-                        f"📚 *{guide['name']}*\n\n"
-                        "100% free from AssignPro Solution.\n"
-                        "Need expert help beyond the guide? We're here 24/7."
-                        f"{STUDY_WARNING}"
-                    ),
-                    parse_mode="Markdown",
-                    reply_markup=quote_cta_keyboard()
-                )
-            else:
-                await query.message.reply_text(
-                    f"📚 *{guide['name']}*\n\n"
-                    "This guide is coming very soon! Message us on WhatsApp and we'll send it to you directly.",
-                    parse_mode="Markdown",
-                    reply_markup=InlineKeyboardMarkup([
-                        [InlineKeyboardButton("📱 WhatsApp Us", url=WHATSAPP_URL)],
-                        [InlineKeyboardButton("« Back",         callback_data="guides")],
-                    ])
-                )
+        await send_guide(query, key)
 
     # ── PRICING ──
     elif data == "pricing":
@@ -895,6 +1071,114 @@ async def broadcast(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     msg = " ".join(ctx.args)
     await update.message.reply_text(f"Broadcasting: {msg}")
 
+# ─── ADMIN COMMANDS ────────────────────────────────────────────────────────────
+async def admin_users(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Admin: /users — see all users and stats."""
+    if update.effective_user.id != ADMIN_ID:
+        return
+    users = get_all_users()
+    total = len(users)
+    active = sum(1 for u in users.values() if u.get("downloads"))
+    text = (
+        f"👥 *User Stats*\n\n"
+        f"Total users: *{total}*\n"
+        f"Users who downloaded: *{active}*\n\n"
+        f"*Recent users:*\n"
+    )
+    for uid, u in list(users.items())[-10:]:
+        text += f"• {u.get('first_name','')} @{u.get('username','?')} — {len(u.get('downloads',[]))} downloads\n"
+    await update.message.reply_text(text, parse_mode="Markdown")
+
+async def admin_unlock(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Admin: /unlock USER_ID GUIDE_KEY — grant guide access to a user."""
+    if update.effective_user.id != ADMIN_ID:
+        return
+    if len(ctx.args) < 2:
+        await update.message.reply_text("Usage: /unlock USER_ID GUIDE_KEY\nExample: /unlock 123456789 harvard")
+        return
+    user_id  = ctx.args[0]
+    guide_key = ctx.args[1]
+    if guide_key not in GUIDES:
+        await update.message.reply_text(f"❌ Guide '{guide_key}' not found.\nAvailable: {', '.join(GUIDES.keys())}")
+        return
+    grant_guide_access(user_id, guide_key)
+    await update.message.reply_text(f"✅ Access granted!\nUser {user_id} can now download: {GUIDES[guide_key]['name']}")
+    # Notify the user
+    try:
+        await ctx.bot.send_message(
+            chat_id=int(user_id),
+            text=f"🎉 *Your guide is unlocked!*\n\n"
+                 f"📚 *{GUIDES[guide_key]['name']}*\n\n"
+                 "Go to 📚 Free Guides in the menu and click it to download now!",
+            parse_mode="Markdown"
+        )
+    except Exception:
+        await update.message.reply_text("⚠️ Could not notify user — they may not have started the bot yet.")
+
+async def admin_unlock_all(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Admin: /unlockall USER_ID — grant access to ALL guides."""
+    if update.effective_user.id != ADMIN_ID:
+        return
+    if not ctx.args:
+        await update.message.reply_text("Usage: /unlockall USER_ID")
+        return
+    user_id = ctx.args[0]
+    for guide_key in GUIDES.keys():
+        grant_guide_access(user_id, guide_key)
+    await update.message.reply_text(f"✅ All 8 guides unlocked for user {user_id}!")
+    try:
+        await ctx.bot.send_message(
+            chat_id=int(user_id),
+            text="🎉 *All guides unlocked!*\n\nYou now have access to all 8 premium guides.\nGo to 📚 Free Guides in the menu to download them!",
+            parse_mode="Markdown"
+        )
+    except Exception:
+        pass
+
+async def admin_broadcast(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Admin: /broadcast MESSAGE — send message to all users."""
+    if update.effective_user.id != ADMIN_ID:
+        return
+    if not ctx.args:
+        await update.message.reply_text("Usage: /broadcast Your message here")
+        return
+    msg = " ".join(ctx.args)
+    users = get_all_users()
+    sent = 0
+    failed = 0
+    await update.message.reply_text(f"📢 Broadcasting to {len(users)} users...")
+    for uid in users.keys():
+        try:
+            await ctx.bot.send_message(chat_id=int(uid), text=msg, parse_mode="Markdown")
+            sent += 1
+        except Exception:
+            failed += 1
+    await update.message.reply_text(f"✅ Broadcast complete!\nSent: {sent} | Failed: {failed}")
+
+async def admin_stats(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Admin: /stats — full stats breakdown."""
+    if update.effective_user.id != ADMIN_ID:
+        return
+    users = get_all_users()
+    all_downloads = []
+    all_guides = []
+    for u in users.values():
+        all_downloads.extend(u.get("downloads", []))
+        all_guides.extend(u.get("guides", []))
+
+    from collections import Counter
+    top_samples = Counter(all_downloads).most_common(5)
+    text = (
+        f"📊 *Full Stats*\n\n"
+        f"👥 Total users: *{len(users)}*\n"
+        f"📥 Total downloads: *{len(all_downloads)}*\n"
+        f"🔓 Guide unlocks: *{len(all_guides)}*\n\n"
+        f"*Top 5 Most Downloaded Samples:*\n"
+    )
+    for sample, count in top_samples:
+        text += f"• {sample}: {count} downloads\n"
+    await update.message.reply_text(text, parse_mode="Markdown")
+
 # ─── MAIN ──────────────────────────────────────────────────────────────────────
 def main():
     app = Application.builder().token(BOT_TOKEN).build()
@@ -915,14 +1199,18 @@ def main():
         per_message=False,
     )
 
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("broadcast", broadcast))
+    app.add_handler(CommandHandler("start",       start))
+    app.add_handler(CommandHandler("users",       admin_users))
+    app.add_handler(CommandHandler("unlock",      admin_unlock))
+    app.add_handler(CommandHandler("unlockall",   admin_unlock_all))
+    app.add_handler(CommandHandler("broadcast",   admin_broadcast))
+    app.add_handler(CommandHandler("stats",       admin_stats))
     app.add_handler(quote_conv)
     app.add_handler(CallbackQueryHandler(button_handler))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, fallback_message))
     app.add_handler(MessageHandler(filters.Document.ALL, fallback_message))
 
-    print("AssignPro Bot is running...")
+    print("AssignPro Bot is running — Phase 2 Active! 🚀")
     app.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
