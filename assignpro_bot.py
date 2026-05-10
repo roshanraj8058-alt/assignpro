@@ -197,14 +197,14 @@ SAMPLES = {
 }
 
 GUIDES = {
-    "harvard":       {"name": "Harvard Referencing — Complete Guide PDF",           "file_id": "YOUR_FILE_ID_G1"},
-    "apa":           {"name": "APA 7th Edition — Full Referencing Guide",           "file_id": "YOUR_FILE_ID_G2"},
-    "oscola":        {"name": "OSCOLA Legal Referencing — Complete Guide",           "file_id": "YOUR_FILE_ID_G3"},
-    "essay_guide":   {"name": "How to Write a UK 2:1 Essay — Step by Step",         "file_id": "YOUR_FILE_ID_G4"},
-    "diss_guide":    {"name": "Dissertation Success Guide — 10,000 Words",           "file_id": "YOUR_FILE_ID_G5"},
-    "turnitin":      {"name": "How to Make Work Turnitin-Safe — Guide",              "file_id": "YOUR_FILE_ID_G6"},
-    "nursing_guide": {"name": "Nursing Assignments Guide — NMC Standards",           "file_id": "YOUR_FILE_ID_G7"},
-    "critical":      {"name": "Critical Thinking & Analysis Guide for UK Students",  "file_id": "YOUR_FILE_ID_G8"},
+    "harvard":       {"name": "Harvard Referencing — Complete Guide PDF",           "file_id": "BQACAgUAAxkBAAPQagABOxnTELDCD7rd7UDrcZA2icGRAAL4GgACdgkAAVQ4fCrdh263wjsE"},
+    "apa":           {"name": "APA 7th Edition — Full Referencing Guide",           "file_id": "BQACAgUAAxkBAAPHagABOuvwFhgelCZVD_8khHBFeJm-AAL0GgACdgkAAVR4E4JvRfTY5DsE"},
+    "oscola":        {"name": "OSCOLA Legal Referencing — Complete Guide",           "file_id": "BQACAgUAAxkBAAPVagABOzjlZzldCMRP2mqbRstJVa2nAAL7GgACdgkAAVQ_PY_G55WTSTsE"},
+    "essay_guide":   {"name": "How to Write a UK 2:1 Essay — Step by Step",         "file_id": "BQACAgUAAxkBAAPdagABPWUI7xWGe_wepd5FsBhW61RYAAMbAAJ2CQABVPefFfcb2LDqOwQ"},
+    "diss_guide":    {"name": "Dissertation Success Guide — 10,000 Words",           "file_id": "BQACAgUAAxkBAAPNagABOwikunKD203gDtFFhtYvBaq4AAL2GgACdgkAAVQVeSC-8eW6UzsE"},
+    "turnitin":      {"name": "How to Make Work Turnitin-Safe — Guide",              "file_id": "BQACAgUAAxkBAAPaagABPHA8K2ur2QvQwRhvLbjuuWGAAAL-GgACdgkAAVQaK0ubXYKHhjsE"},
+    "nursing_guide": {"name": "Nursing Assignments Guide — NMC Standards",           "file_id": "BQACAgUAAxkBAAPgagABPatV80Q6HF3TKqfxrCGl5z39AAIBGwACdgkAAVSkq4OmI1_OFjsE"},
+    "critical":      {"name": "Critical Thinking & Analysis Guide for UK Students",  "file_id": "BQACAgUAAxkBAAPKagABOvqsw_oSQEx6D2sjE0VN_k54AAL1GgACdgkAAVTlpezfFlW8_zsE"},
 }
 
 # ─── KEYBOARDS ─────────────────────────────────────────────────────────────────
