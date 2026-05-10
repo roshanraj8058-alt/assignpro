@@ -67,6 +67,14 @@ SAMPLES = {
     "case_study_mba":     {"name": "Case Study — MBA Strategy (First Class)",                       "file_id": "BQACAgUAAxkBAAMsaf92n5bFXAbwrXk4DQEgZKCs9QcAAjkfAALm3fhXNzQcXuxLKbE7BA"},
     "case_study_redbull": {"name": "Case Study — Red Bull Marketing Strategy (First Class)",        "file_id": "BQACAgUAAxkBAANHaf9_JR-eawsuxKIMdUZyxG57fe4AAksfAALm3fhXhJIZ3QY3GRo7BA"},
     "case_study_cocacola":{"name": "Case Study — Coca-Cola Marketing Strategy (2:1 Grade)",        "file_id": "BQACAgUAAxkBAANKaf9_RenVLs9Exx0bbJjysMWo8SIAAkwfAALm3fhX28o8PiCxg5c7BA"},
+    "case_study_nike":    {"name": "Case Study — Nike Marketing Strategy (First Class)",        "file_id": "PLACEHOLDER_nike"},
+    "case_study_apple":   {"name": "Case Study — Apple Business Strategy (2:1 Grade)",          "file_id": "PLACEHOLDER_apple"},
+    "case_study_nhs":     {"name": "Case Study — NHS Healthcare Management (First Class)",       "file_id": "PLACEHOLDER_nhs"},
+    "case_study_tesla":   {"name": "Case Study — Tesla Innovation & Disruption (2:1 Grade)",    "file_id": "PLACEHOLDER_tesla"},
+    "case_study_amazon":  {"name": "Case Study — Amazon Operations Management (First Class)",   "file_id": "PLACEHOLDER_amazon"},
+    "case_study_airbnb":  {"name": "Case Study — Airbnb Platform Business Model (2:1 Grade)",  "file_id": "PLACEHOLDER_airbnb"},
+    "case_study_zara":    {"name": "Case Study — Zara Supply Chain Innovation (First Class)",   "file_id": "PLACEHOLDER_zara"},
+    "case_study_mh_law":  {"name": "Case Study — Mental Health Law UK (2:1 Grade)",             "file_id": "PLACEHOLDER_mh_law"},
     # ── REPORTS ──
     "report_engineering": {"name": "Report — Sustainable Energy & Engineering (2:1 Grade, 3000 words)", "file_id": "BQACAgUAAxkBAANEaf9-8mm3eSVyQQFx-DUaW4l3uZEAAkofAALm3fhX30DMIiQM6447BA"},
     "report_finance":     {"name": "Report — Financial Analysis (First Class, 2500 words)",         "file_id": "YOUR_FILE_ID_9"},
@@ -93,12 +101,12 @@ SAMPLES = {
     # ── LAW ──
     "law_essay":          {"name": "Law — Criminal Law Essay (First Class, OSCOLA)",                "file_id": "BQACAgUAAxkBAANQaf9_hhu5j2wo7zNnZV2r3QJbBfwAAk4fAALm3fhX2FvDbP22SyY7BA"},
     "law_tort":           {"name": "Law — Tort Law & Negligence Essay (2:1 Grade, OSCOLA)",        "file_id": "BQACAgUAAxkBAANNaf9_Z35aAoG6QriO8GV7O4CPz5MAAk0fAALm3fhXmej01tDfvao7BA"},
-    "law_contract":    {"name": "Law — Contract Law: Offer, Acceptance & Consideration (First Class)", "file_id": "PLACEHOLDER_law_contract"},
-    "law_employment":  {"name": "Law — Employment Law: Unfair Dismissal (2:1 Grade)",                  "file_id": "PLACEHOLDER_law_employment"},
-    "law_human_rights":{"name": "Law — Human Rights Act 1998 (First Class)",                           "file_id": "PLACEHOLDER_law_human_rights"},
-    "law_company":     {"name": "Law — Company Law: Directors Duties (2:1 Grade)",                     "file_id": "PLACEHOLDER_law_company"},
-    "law_land":        {"name": "Law — Land Law: Adverse Possession (First Class)",                    "file_id": "PLACEHOLDER_law_land"},
-    "law_family":      {"name": "Law — Family Law: Best Interests of the Child (2:1 Grade)",           "file_id": "PLACEHOLDER_law_family"},
+    "law_contract":    {"name": "Law — Contract Law: Offer, Acceptance & Consideration (First Class)", "file_id": "BQACAgUAAxkBAAOiagABNvOSJHeS4mNItdRlwCiJsxYhAALhGgACdgkAAVSXxdNbpK3KmDsE"},
+    "law_employment":  {"name": "Law — Employment Law: Unfair Dismissal (2:1 Grade)",                  "file_id": "BQACAgUAAxkBAAOlagABNwqc1ObVZFMdEuXQ4ZGzAAF4yQAC4xoAAnYJAAFUmBoNBloGKN87BA"},
+    "law_human_rights":{"name": "Law — Human Rights Act 1998 (First Class)",                           "file_id": "BQACAgUAAxkBAAOragABNys2_-Mt66OaOvMkryTm7bGaAALlGgACdgkAAVRWMIJ6bq9rcjsE"},
+    "law_company":     {"name": "Law — Company Law: Directors Duties (2:1 Grade)",                     "file_id": "BQACAgUAAxkBAAOfagABNuTtu8QvzWMlIYJ75uV_NhK_AALgGgACdgkAAVRykTrPm-lKvTsE"},
+    "law_land":        {"name": "Law — Land Law: Adverse Possession (First Class)",                    "file_id": "BQACAgUAAxkBAAOuagABNztDcPeQMksWeBCrhGrFCTzYAALmGgACdgkAAVS9rOjAv6imXDsE"},
+    "law_family":      {"name": "Law — Family Law: Best Interests of the Child (2:1 Grade)",           "file_id": "BQACAgUAAxkBAAOoagABNxv4eO9ZCAyJQ2fVZy6IBdeAALkGgACdgkAAVTSylNY1C9l1zsE"},
 }
 
 GUIDES = {
@@ -166,11 +174,19 @@ def dissertation_samples_keyboard():
 
 def case_study_samples_keyboard():
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("📊 Law Case Study",      callback_data="sample_case_study_law")],
-        [InlineKeyboardButton("📊 MBA Case Study",      callback_data="sample_case_study_mba")],
-        [InlineKeyboardButton("📊 Red Bull Case Study", callback_data="sample_case_study_redbull")],
-        [InlineKeyboardButton("📊 Coca-Cola Case Study",callback_data="sample_case_study_cocacola")],
-        [InlineKeyboardButton("« Back to Samples",      callback_data="samples")],
+        [InlineKeyboardButton("📊 Law Case Study",          callback_data="sample_case_study_law")],
+        [InlineKeyboardButton("📊 MBA Case Study",          callback_data="sample_case_study_mba")],
+        [InlineKeyboardButton("📊 Red Bull Case Study",     callback_data="sample_case_study_redbull")],
+        [InlineKeyboardButton("📊 Coca-Cola Case Study",    callback_data="sample_case_study_cocacola")],
+        [InlineKeyboardButton("📊 Nike Marketing",          callback_data="sample_case_study_nike")],
+        [InlineKeyboardButton("📊 Apple Strategy",          callback_data="sample_case_study_apple")],
+        [InlineKeyboardButton("📊 NHS Management",          callback_data="sample_case_study_nhs")],
+        [InlineKeyboardButton("📊 Tesla Innovation",        callback_data="sample_case_study_tesla")],
+        [InlineKeyboardButton("📊 Amazon Operations",       callback_data="sample_case_study_amazon")],
+        [InlineKeyboardButton("📊 Airbnb Disruption",       callback_data="sample_case_study_airbnb")],
+        [InlineKeyboardButton("📊 Zara Supply Chain",       callback_data="sample_case_study_zara")],
+        [InlineKeyboardButton("📊 Mental Health Law",       callback_data="sample_case_study_mh_law")],
+        [InlineKeyboardButton("« Back to Samples",          callback_data="samples")],
     ])
 
 def report_samples_keyboard():
@@ -444,6 +460,22 @@ async def button_handler(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await send_sample(query, "case_study_redbull")
     elif data == "sample_case_study_cocacola":
         await send_sample(query, "case_study_cocacola")
+    elif data == "sample_case_study_nike":
+        await send_sample(query, "case_study_nike")
+    elif data == "sample_case_study_apple":
+        await send_sample(query, "case_study_apple")
+    elif data == "sample_case_study_nhs":
+        await send_sample(query, "case_study_nhs")
+    elif data == "sample_case_study_tesla":
+        await send_sample(query, "case_study_tesla")
+    elif data == "sample_case_study_amazon":
+        await send_sample(query, "case_study_amazon")
+    elif data == "sample_case_study_airbnb":
+        await send_sample(query, "case_study_airbnb")
+    elif data == "sample_case_study_zara":
+        await send_sample(query, "case_study_zara")
+    elif data == "sample_case_study_mh_law":
+        await send_sample(query, "case_study_mh_law")
     elif data == "sample_report_engineering":
         await send_sample(query, "report_engineering")
     elif data == "sample_report_finance":
